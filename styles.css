@@ -1,212 +1,111 @@
 /*
 =======================================================================
-  styles.css -- SecureChat v1.0
-  Estilo: Windows 95 / Web 1.0 (circa 1995-2000)
-  Fuentes: Courier New, Times New Roman
-  Paleta: Gris Win95 (#c0c0c0), Azul Navy (#000080), Verde terminal
+  styles.css -- SecureChat v2.0
+  Estilo: Windows 95 / Web 1.0
+  Nuevos en v2: fingerprint panel, notice-warning, rate-warn
 =======================================================================
 */
 
-/* ========================================
-   RESET Y BASE
-   ======================================== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --win-gray:       #c0c0c0;
-  --win-dark-gray:  #808080;
-  --win-black:      #000000;
-  --win-white:      #ffffff;
-  --win-navy:       #000080;
-  --win-blue-grad:  #1084d0;
-  --win-green:      #008000;
-  --win-red:        #cc0000;
-  --terminal-green: #00cc00;
-  --terminal-bg:    #000000;
-  --msg-me-bg:      #d4ecd4;
-  --msg-them-bg:    #ffffc0;
-  --msg-sys-bg:     #e8e8e8;
-  --teal-desktop:   #008080;
+  --win-gray:      #c0c0c0;
+  --win-dark-gray: #808080;
+  --win-black:     #000000;
+  --win-white:     #ffffff;
+  --win-navy:      #000080;
+  --win-blue-hi:   #1084d0;
+  --win-green:     #006600;
+  --win-red:       #cc0000;
+  --term-green:    #00cc00;
+  --term-bg:       #000000;
+  --teal-desk:     #008080;
+  --msg-me:        #d4ecd4;
+  --msg-them:      #ffffc0;
+  --msg-sys:       #e8e8e8;
 }
 
 html, body {
   height: 100%;
-  background-color: var(--teal-desktop);
   font-family: "Courier New", Courier, monospace;
   font-size: 13px;
   color: var(--win-black);
   overflow-x: hidden;
-}
-
-/* Patron de puntos sutil (textura de escritorio Win95) */
-body {
+  background-color: var(--teal-desk);
   background-image: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px);
   background-size: 4px 4px;
-  background-color: var(--teal-desktop);
 }
 
-a {
-  color: var(--win-navy);
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-}
-
+a { color: var(--win-navy); font-size: 11px; }
 a:visited { color: #551a8b; }
 
-/* ========================================
-   SPA: SISTEMA DE VISTAS
-   ======================================== */
-.view {
-  display: none;
-  min-height: 100vh;
-  width: 100%;
-  padding: 16px;
-}
-
-.view.active {
-  display: block;
-}
-
+/* ---- SPA Views ---- */
+.view { display: none; min-height: 100vh; width: 100%; padding: 16px; }
+.view.active { display: block; }
 .desktop-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 20px;
+  display: flex; flex-direction: column;
+  align-items: center; padding-top: 20px;
 }
 
-/* ========================================
-   VENTANA ESTILO WINDOWS 95
-   ======================================== */
+/* ---- Window ---- */
 .window {
-  background-color: var(--win-gray);
-  border-width: 2px;
-  border-style: solid;
+  background: var(--win-gray);
+  border: 2px solid;
   border-color: var(--win-white) var(--win-dark-gray) var(--win-dark-gray) var(--win-white);
-  /* Sombra interior Win95 */
-  box-shadow:
-    inset -1px -1px 0 var(--win-black),
-    inset  1px  1px 0 #dfdfdf,
-    3px 3px 0 rgba(0,0,0,0.4);
+  box-shadow: inset -1px -1px 0 var(--win-black), inset 1px 1px 0 #dfdfdf, 3px 3px 0 rgba(0,0,0,0.4);
   width: 100%;
 }
 
-/* ========================================
-   BARRA DE TITULO
-   ======================================== */
-.title-bar,
-.chat-titlebar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: linear-gradient(to right, var(--win-navy) 0%, var(--win-blue-grad) 100%);
+/* ---- Title Bars ---- */
+.title-bar, .chat-titlebar {
+  display: flex; align-items: center; gap: 4px;
+  background: linear-gradient(to right, var(--win-navy), var(--win-blue-hi));
   color: var(--win-white);
   padding: 3px 4px;
   user-select: none;
 }
-
 .title-bar-text {
-  flex: 1;
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1; font-size: 11px; font-weight: bold;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.title-icon { font-size: 10px; color: #aaddff; margin-right: 2px; }
+.title-bar-alert { background: linear-gradient(to right, #800000, #cc2200) !important; }
 
-.title-icon {
-  font-size: 10px;
-  margin-right: 2px;
-  color: #aaddff;
-}
-
-.title-bar-alert {
-  background: linear-gradient(to right, #800000, #cc2200) !important;
-}
-
-/* Botones de la barra de titulo */
-.title-bar-buttons {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
+.title-bar-buttons { display: flex; gap: 2px; flex-shrink: 0; }
 .tb-btn {
-  width: 16px;
-  height: 14px;
-  min-width: unset;
+  width: 16px; height: 14px; min-width: unset;
   background: var(--win-gray);
   border: 1px solid;
   border-color: var(--win-white) var(--win-black) var(--win-black) var(--win-white);
-  color: var(--win-black);
+  font-size: 9px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   font-family: "Courier New", monospace;
-  font-size: 9px;
-  font-weight: bold;
-  padding: 0;
-  cursor: pointer;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
+.tb-btn:active { border-color: var(--win-black) var(--win-white) var(--win-white) var(--win-black); }
+.tb-btn-close { color: var(--win-red); }
 
-.tb-btn:active {
-  border-color: var(--win-black) var(--win-white) var(--win-white) var(--win-black);
-}
+/* ---- Window Body ---- */
+.window-body { padding: 10px 12px 12px; }
 
-.tb-btn-close {
-  color: var(--win-red);
-}
-
-/* ========================================
-   CUERPO DE VENTANA
-   ======================================== */
-.window-body {
-  padding: 10px 12px 12px;
-}
-
-/* ========================================
-   CABECERA ASCII
-   ======================================== */
+/* ---- ASCII Header ---- */
 .ascii-header {
-  background: var(--terminal-bg);
-  color: var(--terminal-green);
-  font-family: "Courier New", Courier, monospace;
-  font-size: 8px;
-  padding: 8px;
-  overflow-x: auto;
+  background: var(--term-bg); color: var(--term-green);
+  font-size: 8px; padding: 8px;
   border: 2px inset var(--win-dark-gray);
+  overflow-x: auto; line-height: 1.2; white-space: pre;
   margin-bottom: 4px;
-  line-height: 1.2;
-  white-space: pre;
 }
-
-.ascii-header pre {
-  margin: 0;
-  font-size: 8px;
-}
-
+.ascii-header pre { margin: 0; font-size: 8px; }
 .ascii-sub {
-  background: var(--terminal-bg);
-  color: #00aaff;
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  text-align: center;
-  padding: 3px 8px;
+  background: var(--term-bg); color: #00aaff;
+  font-size: 10px; text-align: center; padding: 3px 8px;
   border-left: 2px inset var(--win-dark-gray);
   border-right: 2px inset var(--win-dark-gray);
   border-bottom: 2px inset var(--win-dark-gray);
   margin-bottom: 2px;
 }
 
-/* ========================================
-   SEPARADOR
-   ======================================== */
+/* ---- Separator ---- */
 .separator {
   border: none;
   border-top: 1px solid var(--win-dark-gray);
@@ -214,572 +113,289 @@ a:visited { color: #551a8b; }
   margin: 8px 0;
 }
 
-/* ========================================
-   TABLA DE INFORMACION
-   ======================================== */
+/* ---- Info Table ---- */
 .info-table {
-  border-collapse: collapse;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
+  border-collapse: collapse; font-size: 12px;
   border: 1px solid var(--win-dark-gray);
-  background: #d8d8d8;
-  margin-bottom: 8px;
+  background: #d8d8d8; margin-bottom: 8px;
 }
-
-.info-table td {
-  padding: 3px 8px;
-  border-bottom: 1px solid #b8b8b8;
-  vertical-align: middle;
-}
-
-.info-table tr:last-child td {
-  border-bottom: none;
-}
-
+.info-table td { padding: 3px 8px; border-bottom: 1px solid #b8b8b8; vertical-align: middle; }
+.info-table tr:last-child td { border-bottom: none; }
 .label-cell {
-  font-weight: bold;
-  color: var(--win-navy);
+  font-weight: bold; color: var(--win-navy);
+  background: #c8c8c8; border-right: 1px solid var(--win-dark-gray);
   white-space: nowrap;
-  background: #c8c8c8;
-  border-right: 1px solid var(--win-dark-gray);
 }
 
-/* ========================================
-   DISPLAY DE ID (estilo terminal)
-   ======================================== */
+/* ---- ID Display ---- */
 .id-display {
   display: inline-block;
-  background: var(--terminal-bg);
-  color: var(--terminal-green);
-  font-family: "Courier New", Courier, monospace;
-  font-size: 18px;
-  font-weight: bold;
-  letter-spacing: 5px;
+  background: var(--term-bg); color: var(--term-green);
+  font-size: 18px; font-weight: bold; letter-spacing: 5px;
   padding: 3px 10px;
   border: 2px inset var(--win-dark-gray);
-  min-width: 80px;
-  text-align: center;
+  min-width: 80px; text-align: center;
   vertical-align: middle;
 }
 
-/* ========================================
-   TEXTOS Y PARRAFOS
-   ======================================== */
-.retro-p {
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  margin-bottom: 6px;
-}
+/* ---- Texto ---- */
+.retro-p { font-size: 12px; line-height: 1.6; margin-bottom: 6px; }
+.hint-text { font-size: 11px; color: #333; line-height: 1.5; margin-bottom: 8px; }
+.section-title { font-size: 12px; font-weight: bold; color: var(--win-navy); margin-bottom: 4px; }
+.text-green { color: var(--win-green); font-weight: bold; }
 
-.hint-text {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  color: #333;
-  line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-.section-title {
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  font-weight: bold;
-  color: var(--win-navy);
-  margin-bottom: 4px;
-}
-
-.text-green {
-  color: var(--win-green);
-  font-weight: bold;
-}
-
-/* ========================================
-   CAJA DE AVISO
-   ======================================== */
+/* ---- Notice Boxes ---- */
 .notice-box {
-  background: #ffffc0;
-  border: 2px solid #cccc00;
-  border-left: 4px solid #cccc00;
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  padding: 6px 10px;
-  line-height: 1.5;
-  margin: 8px 0;
+  background: #ffffc0; border: 2px solid #cccc00; border-left: 4px solid #cccc00;
+  font-size: 11px; padding: 6px 10px; line-height: 1.5; margin: 8px 0;
+}
+.notice-warning {
+  background: #ffe0e0 !important;
+  border-color: var(--win-red) !important;
+  border-left-color: var(--win-red) !important;
+  color: #660000;
 }
 
-/* ========================================
-   INPUTS Y FORMULARIOS
-   ======================================== */
-.field-group {
-  margin-bottom: 8px;
-}
+/* ---- Inputs ---- */
+.field-group { margin-bottom: 8px; }
+.field-label { display: block; font-size: 11px; font-weight: bold; color: var(--win-navy); margin-bottom: 3px; }
+.field-row { display: flex; gap: 6px; align-items: stretch; }
 
-.field-label {
-  display: block;
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--win-navy);
-  margin-bottom: 3px;
-}
-
-.field-row {
-  display: flex;
-  gap: 6px;
-  align-items: stretch;
-}
-
-input[type="text"],
-textarea {
+input[type="text"], textarea {
   font-family: "Courier New", Courier, monospace;
-  font-size: 12px;
-  color: var(--win-black);
-  background: var(--win-white);
+  font-size: 12px; color: var(--win-black); background: var(--win-white);
   border: 2px solid;
   border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
-  padding: 3px 6px;
-  outline: none;
+  padding: 3px 6px; outline: none;
 }
-
-input[type="text"] {
-  flex: 1;
-  min-width: 0;
-}
-
-input[type="text"]:focus,
-textarea:focus {
+input[type="text"] { flex: 1; min-width: 0; }
+input[type="text"]:focus, textarea:focus {
   border-color: var(--win-navy) var(--win-white) var(--win-white) var(--win-navy);
 }
+textarea { resize: vertical; width: 100%; min-height: 55px; }
 
-textarea {
-  resize: vertical;
-  width: 100%;
-  min-height: 55px;
-}
-
-/* ========================================
-   BOTONES
-   ======================================== */
+/* ---- Buttons ---- */
 button {
   font-family: "Courier New", Courier, monospace;
-  font-size: 11px;
-  font-weight: bold;
-  background: var(--win-gray);
-  color: var(--win-black);
+  font-size: 11px; font-weight: bold;
+  background: var(--win-gray); color: var(--win-black);
   border: 2px solid;
   border-color: var(--win-white) var(--win-dark-gray) var(--win-dark-gray) var(--win-white);
   box-shadow: inset -1px -1px 0 var(--win-black), inset 1px 1px 0 #dfdfdf;
-  padding: 3px 12px;
-  cursor: pointer;
-  min-width: 70px;
-  white-space: nowrap;
-  letter-spacing: 0.3px;
+  padding: 3px 12px; cursor: pointer; min-width: 70px;
+  white-space: nowrap; letter-spacing: 0.3px;
 }
-
 button:active {
   border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
   box-shadow: inset 1px 1px 0 var(--win-black), inset -1px -1px 0 #dfdfdf;
 }
+button:hover:not(:active) { background: #d4d4d4; }
+button:focus { outline: 1px dotted var(--win-black); outline-offset: -3px; }
+.btn-small { font-size: 10px; padding: 2px 6px; min-width: unset; margin-left: 6px; vertical-align: middle; }
+.btn-accept { color: #004400; background: #90ee90; }
+.btn-reject { color: #440000; background: #ffb0b0; }
 
-button:hover:not(:active) {
-  background: #d4d4d4;
-}
-
-button:focus {
-  outline: 1px dotted var(--win-black);
-  outline-offset: -3px;
-}
-
-.btn-small {
-  font-size: 10px;
-  padding: 2px 6px;
-  min-width: unset;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-.btn-accept {
-  color: #004400;
-  background: #90ee90;
-}
-
-.btn-reject {
-  color: #440000;
-  background: #ffb0b0;
-}
-
-/* ========================================
-   BARRA DE ESTADO (inferior)
-   ======================================== */
+/* ---- Status bar ---- */
 .status-bar-bottom {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  min-height: 20px;
-  padding: 2px 6px;
-  margin-top: 8px;
-  border: 1px solid;
-  border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
+  font-size: 11px; min-height: 20px; padding: 2px 6px; margin-top: 8px;
+  border: 1px solid; border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
   background: var(--win-gray);
 }
-
-/* Colores de estado */
 .status-connecting { color: #0000aa; font-weight: bold; }
 .status-ok { color: var(--win-green); font-weight: bold; }
 .status-error { color: var(--win-red); font-weight: bold; }
 
-/* ========================================
-   ANIMACION DE ESPERA
-   ======================================== */
+/* ---- Waiting animation ---- */
 .wait-animation {
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--terminal-green);
-  background: var(--terminal-bg);
-  padding: 10px;
+  font-size: 14px; font-weight: bold; color: var(--term-green);
+  background: var(--term-bg); padding: 10px;
   border: 2px inset var(--win-dark-gray);
-  text-align: center;
-  letter-spacing: 2px;
+  text-align: center; letter-spacing: 2px;
   animation: blink-wait 1.2s step-end infinite;
 }
+@keyframes blink-wait { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-@keyframes blink-wait {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-/* ========================================
-   PIE DE PAGINA
-   ======================================== */
+/* ---- Footer ---- */
 .footer-note {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  color: #e0e0e0;
-  text-align: center;
-  margin-top: 10px;
-  padding: 4px;
+  font-size: 10px; color: #e0e0e0; text-align: center;
+  margin-top: 10px; padding: 4px;
   text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 }
+.footer-note a { color: #aaddff; }
 
-.footer-note a {
-  color: #aaddff;
-}
-
-/* ========================================
-   MODAL OVERLAY
-   ======================================== */
+/* ---- Modals ---- */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9000;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+  display: flex; justify-content: center; align-items: center; z-index: 9000;
 }
+.modal-overlay.hidden { display: none; }
+.modal-window { width: 90%; max-width: 500px; }
+.alert-icon-row { font-size: 20px; text-align: center; margin-bottom: 8px; color: #cc8800; }
+.button-row-centered { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
 
-.modal-overlay.hidden {
-  display: none;
+/* ---- FINGERPRINT PANEL (Anti-MitM) ---- */
+.fingerprint-panel {
+  background: #001a00;
+  border: 2px solid #00ff00;
+  border-left: 4px solid #ff0000;
+  padding: 10px 14px;
+  margin: 0 6px;
+  flex-shrink: 0;
 }
-
-.modal-window {
-  width: 90%;
-  max-width: 480px;
-  animation: none;
-}
-
-.alert-icon-row {
-  font-size: 20px;
+.fingerprint-panel.hidden { display: none; }
+.fp-title {
+  color: #ff4444;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
   text-align: center;
+}
+.fp-subtitle {
+  color: #aaaaaa;
+  font-size: 10px;
+  line-height: 1.5;
   margin-bottom: 8px;
-  color: #cc8800;
+  text-align: center;
+}
+.fingerprint-code {
+  background: var(--term-bg);
+  color: #00ff88;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  padding: 8px 12px;
+  border: 1px solid #00ff00;
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+.fp-buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.btn-fp-ok {
+  background: #004400; color: #00ff00;
+  border-color: #00ff00 #002200 #002200 #00ff00;
+  min-width: unset;
+}
+.btn-fp-fail {
+  background: #440000; color: #ff4444;
+  border-color: #ff4444 #220000 #220000 #ff4444;
+  min-width: unset;
 }
 
-.button-row-centered {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-/* ========================================
-   CHAT: VENTANA COMPLETA
-   ======================================== */
+/* ---- CHAT CONTAINER ---- */
 #view-chat.active {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0;
+  display: flex; justify-content: center;
+  align-items: flex-start; padding: 0;
 }
-
 .chat-outer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 760px;
-  height: 100vh;
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 780px; height: 100vh;
   background: var(--win-gray);
   border-left: 2px solid var(--win-white);
   border-right: 2px solid var(--win-dark-gray);
   box-shadow: 4px 4px 0 rgba(0,0,0,0.4);
 }
 
-.chat-titlebar {
-  flex-shrink: 0;
-}
-
-/* ========================================
-   CABECERA DEL CHAT (contacto)
-   ======================================== */
+/* ---- Chat Header ---- */
 .chat-header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  flex-shrink: 0; display: flex; align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
-  background: #d4d4d4;
+  padding: 6px 10px; background: #d4d4d4;
   border-bottom: 2px solid;
   border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 10px; flex-wrap: wrap;
 }
-
-.contact-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Avatar SVG: silueta generica sin rostro */
-.avatar-container {
-  flex-shrink: 0;
-  border: 2px solid var(--win-black);
-  background: var(--win-dark-gray);
-}
-
-.avatar-svg {
-  display: block;
-  width: 38px;
-  height: 38px;
-}
-
-.contact-name {
-  font-family: "Courier New", monospace;
-  font-size: 13px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.contact-meta {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  color: var(--win-dark-gray);
-  margin-top: 1px;
-}
-
-.contact-id-meta {
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  color: #555;
-}
-
-.dot-green {
-  color: var(--win-green);
-  margin-right: 3px;
-  font-size: 8px;
-}
-
+.contact-row { display: flex; align-items: center; gap: 10px; }
+.avatar-container { flex-shrink: 0; border: 2px solid var(--win-black); background: var(--win-dark-gray); }
+.avatar-svg { display: block; width: 38px; height: 38px; }
+.contact-name { font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.contact-meta { font-size: 10px; color: var(--win-dark-gray); margin-top: 1px; }
+.contact-id-meta { font-size: 10px; color: #555; }
+.dot-green { color: var(--win-green); margin-right: 3px; font-size: 8px; }
 .encryption-badge {
-  font-family: "Courier New", monospace;
-  font-size: 9px;
-  color: #004400;
-  background: #c0f0c0;
-  border: 1px solid #006600;
-  padding: 1px 5px;
-  margin-top: 2px;
-  display: inline-block;
+  font-size: 9px; color: #004400; background: #c0f0c0;
+  border: 1px solid #006600; padding: 1px 5px;
+  margin-top: 2px; display: inline-block;
 }
+.chat-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.chat-actions button { font-size: 10px; padding: 2px 8px; min-width: unset; }
 
-.chat-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.chat-actions button {
-  font-size: 10px;
-  padding: 2px 8px;
-  min-width: unset;
-}
-
-/* ========================================
-   CONTENEDOR DE MENSAJES
-   ======================================== */
+/* ---- Messages ---- */
 #messages-container {
-  flex: 1;
-  overflow-y: auto;
+  flex: 1; overflow-y: auto;
   background: var(--win-white);
   border: 2px solid;
   border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
-  margin: 6px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  margin: 4px 6px; padding: 8px;
+  display: flex; flex-direction: column; gap: 4px;
 }
-
-/* Scrollbar estilo retro */
 #messages-container::-webkit-scrollbar { width: 16px; }
-#messages-container::-webkit-scrollbar-track {
-  background: var(--win-gray);
-  border: 1px solid var(--win-dark-gray);
-}
+#messages-container::-webkit-scrollbar-track { background: var(--win-gray); border: 1px solid var(--win-dark-gray); }
 #messages-container::-webkit-scrollbar-thumb {
   background: var(--win-gray);
-  border: 2px solid;
-  border-color: var(--win-white) var(--win-dark-gray) var(--win-dark-gray) var(--win-white);
-  box-shadow: inset 1px 1px 0 #dfdfdf;
-}
-#messages-container::-webkit-scrollbar-button {
-  background: var(--win-gray);
-  border: 2px solid;
-  border-color: var(--win-white) var(--win-dark-gray) var(--win-dark-gray) var(--win-white);
-  height: 16px;
-  display: block;
+  border: 2px solid; border-color: var(--win-white) var(--win-dark-gray) var(--win-dark-gray) var(--win-white);
 }
 
-/* ========================================
-   BURBUJAS DE MENSAJES
-   ======================================== */
-.msg-me,
-.msg-them {
-  max-width: 75%;
-  padding: 4px 8px;
-  border: 1px solid #000;
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  line-height: 1.4;
-  word-wrap: break-word;
-  flex-shrink: 0;
+.msg-me, .msg-them {
+  max-width: 76%; padding: 4px 8px;
+  border: 1px solid #000; font-size: 12px;
+  line-height: 1.4; word-wrap: break-word; flex-shrink: 0;
 }
-
 .msg-me {
-  align-self: flex-end;
-  background: var(--msg-me-bg);
-  border-color: #4a8a4a;
-  border-right: 3px solid #4a8a4a;
-  text-align: right;
+  align-self: flex-end; background: var(--msg-me);
+  border-color: #4a8a4a; border-right: 3px solid #4a8a4a; text-align: right;
 }
-
 .msg-them {
-  align-self: flex-start;
-  background: var(--msg-them-bg);
-  border-color: #8a8a00;
-  border-left: 3px solid #8a8a00;
-  text-align: left;
+  align-self: flex-start; background: var(--msg-them);
+  border-color: #8a8a00; border-left: 3px solid #8a8a00;
 }
-
-.msg-sender {
-  display: block;
-  font-size: 9px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--win-navy);
-  margin-bottom: 2px;
-}
-
-.msg-text {
-  display: block;
-  white-space: pre-wrap;
-}
-
-.msg-time {
-  display: block;
-  font-size: 9px;
-  color: var(--win-dark-gray);
-  margin-top: 2px;
-}
-
-/* Mensajes del sistema */
+.msg-sender { display: block; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: var(--win-navy); margin-bottom: 2px; }
+.msg-text { display: block; white-space: pre-wrap; }
+.msg-time { display: block; font-size: 9px; color: var(--win-dark-gray); margin-top: 2px; }
 .msg-system {
-  align-self: center;
-  text-align: center;
-  font-size: 10px;
-  font-style: italic;
-  color: var(--win-dark-gray);
-  font-family: "Courier New", monospace;
-  padding: 2px 8px;
-  background: var(--msg-sys-bg);
-  border-top: 1px dashed #999;
-  border-bottom: 1px dashed #999;
-  width: 100%;
-  flex-shrink: 0;
+  align-self: center; text-align: center; font-size: 10px;
+  font-style: italic; color: var(--win-dark-gray);
+  padding: 2px 8px; background: var(--msg-sys);
+  border-top: 1px dashed #999; border-bottom: 1px dashed #999;
+  width: 100%; flex-shrink: 0;
+}
+.msg-security {
+  align-self: center; text-align: center; font-size: 10px;
+  color: #004400; font-weight: bold;
+  padding: 3px 8px; background: #d0f0d0;
+  border: 1px solid #006600;
+  width: 100%; flex-shrink: 0;
+}
+.msg-warning {
+  align-self: center; text-align: center; font-size: 10px;
+  color: #660000; font-weight: bold;
+  padding: 3px 8px; background: #ffe0e0;
+  border: 1px solid var(--win-red);
+  width: 100%; flex-shrink: 0;
 }
 
-/* ========================================
-   AREA DE ENTRADA DEL CHAT
-   ======================================== */
+/* ---- Chat Input ---- */
 .chat-input-area {
-  flex-shrink: 0;
-  padding: 4px 6px 6px;
+  flex-shrink: 0; padding: 4px 6px 6px;
   background: var(--win-gray);
   border-top: 2px solid;
   border-color: var(--win-dark-gray) var(--win-white) var(--win-white) var(--win-dark-gray);
 }
+.input-hint { font-size: 9px; color: var(--win-dark-gray); margin-bottom: 3px; }
+.input-row { display: flex; gap: 6px; align-items: stretch; }
+.input-row textarea { flex: 1; min-width: 0; }
+#btn-send { min-width: 60px; font-weight: bold; color: var(--win-navy); padding: 4px 10px; line-height: 1.4; }
+.char-count { font-size: 9px; color: var(--win-dark-gray); text-align: right; margin-top: 2px; }
+.rate-warn { color: var(--win-red); font-weight: bold; font-size: 9px; }
+.rate-warn.hidden { display: none; }
 
-.input-hint {
-  font-family: "Courier New", monospace;
-  font-size: 9px;
-  color: var(--win-dark-gray);
-  margin-bottom: 3px;
-}
-
-.input-row {
-  display: flex;
-  gap: 6px;
-  align-items: stretch;
-}
-
-.input-row textarea {
-  flex: 1;
-  min-width: 0;
-}
-
-#btn-send {
-  min-width: 60px;
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--win-navy);
-  padding: 4px 10px;
-  line-height: 1.4;
-}
-
-.char-count {
-  font-family: "Courier New", monospace;
-  font-size: 9px;
-  color: var(--win-dark-gray);
-  text-align: right;
-  margin-top: 2px;
-}
-
-/* ========================================
-   BARRA DE ESTADO (server status en home)
-   ======================================== */
-#server-status {
-  font-family: "Courier New", monospace;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* ========================================
-   RESPONSIVE (tablets/movil)
-   ======================================== */
+/* ---- Responsive ---- */
 @media (max-width: 560px) {
-  .ascii-header { font-size: 6px; }
-  .ascii-header pre { font-size: 6px; }
+  .ascii-header, .ascii-header pre { font-size: 6px; }
   .id-display { font-size: 14px; letter-spacing: 3px; }
   .chat-header { flex-direction: column; align-items: flex-start; }
-  .msg-me, .msg-them { max-width: 90%; }
+  .msg-me, .msg-them { max-width: 92%; }
+  .fingerprint-code { font-size: 10px; letter-spacing: 1px; }
 }
