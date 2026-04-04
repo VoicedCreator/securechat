@@ -1,71 +1,42 @@
 <!DOCTYPE html>
 <!--
 =======================================================================
-  SecureChat v2.0 -- Auditado y Reforzado
-=======================================================================
-  CAMBIOS DE SEGURIDAD v1 → v2:
-  [1] PeerJS ahora se sirve LOCAL (peerjs.min.js en el mismo repo)
-      → Elimina ataque de CDN comprometido
-  [2] CSP (Content Security Policy) meta tag
-      → Bloquea carga de scripts externos no autorizados / XSS
-  [3] Fingerprint de verificacion (SHA-256 del secreto ECDH)
-      → Detecta ataques Man-in-the-Middle en el intercambio de claves
-  [4] HKDF con labels separados por direccion
-      → Claves AES-GCM-256 distintas para send/recv
-  [5] Numeros de secuencia dentro del payload cifrado
-      → Previene replay attacks
-  [6] Timeout de handshake (30 segundos)
-      → Previene conexiones colgadas
-  [7] Rate limiting (20 msg / 10 seg)
-      → Previene flooding
-
-  DESPLIEGUE EN GITHUB PAGES:
-  ---------------------------
-  Ver instrucciones detalladas al final del README en el repo.
-
-  DEPENDENCIAS:
-  - peerjs.min.js (DEBE estar en la misma carpeta - ver INSTALL.md)
-  - Web Crypto API (nativa del navegador)
-  - WebRTC (nativo del navegador)
+  SecureChat v3.0
+  NUEVO EN v3:
+  [+] Llamadas de voz cifradas (WebRTC DTLS-SRTP)
+  [+] Videollamadas cifradas (WebRTC DTLS-SRTP)
+  [+] Deteccion de Tor Browser con guia de configuracion
+  [+] UI de llamada activa (mute, camara, colgar)
+  [+] Modal de llamada entrante
 =======================================================================
 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SecureChat v2.0</title>
-
-  <!--
-    CONTENT SECURITY POLICY:
-    - default-src 'none'       → Por defecto nada está permitido
-    - script-src 'self'        → Solo scripts del mismo origen (nuestro repo)
-    - connect-src 'self' wss:  → Conexiones WebSocket (para PeerJS) y al mismo origen
-    - style-src 'self' 'unsafe-inline' → CSS propio + estilos inline necesarios
-    - img-src 'self' data:     → Solo imágenes del mismo origen o data URIs
-    Esto bloquea cualquier intento de cargar recursos externos no declarados.
-  -->
+  <title>SecureChat v3.0</title>
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'none';
                  script-src 'self';
                  connect-src 'self' wss: https://0.peerjs.com;
                  style-src 'self' 'unsafe-inline';
                  img-src 'self' data:;
+                 media-src 'self' blob:;
                  form-action 'none';
                  base-uri 'self';">
-
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <!-- ============================================================
-       VISTA 1: INICIO / IDENTIDAD EFIMERA
+       VISTA 1: INICIO
        ============================================================ -->
   <div id="view-home" class="view active">
     <div class="desktop-center">
-      <div class="window" style="max-width:600px;">
+      <div class="window" style="max-width:620px;">
         <div class="title-bar">
           <span class="title-icon">&#9632;</span>
-          <span class="title-bar-text">SecureChat v2.0 -- Mensajeria Anonima P2P</span>
+          <span class="title-bar-text">SecureChat v3.0 -- Chat + Voz + Video P2P Cifrado</span>
           <div class="title-bar-buttons">
             <button class="tb-btn">_</button>
             <button class="tb-btn">&#9633;</button>
@@ -81,12 +52,20 @@
 \___ \ ) _)  )   /) \/ ( )   / ) _)( (__ ) __ ( /    \ )(
 (____/(____)(__\_)\____/(__\_)(____)\___)\)(_)(/\_/\_/(__)</pre>
           </div>
-          <div class="ascii-sub">[ v2.0 AUDITADO -- AES-GCM-256 + ECDH-P256 + HKDF + DTLS/SRTP ]</div>
-          <div class="ascii-sub">&gt;&gt; CLAVES EFIMERAS -- CERO ALMACENAMIENTO -- P2P DIRECTO &lt;&lt;</div>
+          <div class="ascii-sub">[ v3.0 -- CHAT + VOZ + VIDEO -- AES-GCM-256 + DTLS-SRTP + ECDH + HKDF ]</div>
+
+          <!-- Banner Tor -->
+          <div id="tor-banner" class="notice-box notice-tor hidden">
+            <b>&#9888; TOR BROWSER DETECTADO</b><br>
+            WebRTC esta bloqueado en el nivel de seguridad actual de Tor Browser.<br>
+            <b>Para usar SecureChat con Tor:</b> Clic en el icono del escudo (barra de
+            direcciones) → seleccione <b>"Safer"</b> en lugar de "Safest".<br>
+            Esto permite WebRTC. Sus mensajes siguen cifrados E2EE.<br>
+            <b>Nota:</b> Con Tor en modo "Safer", su IP real queda oculta al servidor PeerJS. &#10003;
+          </div>
 
           <div class="separator"></div>
 
-          <!-- Panel de estado -->
           <table class="info-table" width="100%">
             <tr>
               <td class="label-cell" width="38%">SERVIDOR PeerJS:</td>
@@ -100,46 +79,39 @@
               </td>
             </tr>
             <tr>
-              <td class="label-cell">CRYPTO ENGINE:</td>
-              <td><span id="crypto-status" class="text-green">AES-GCM-256 / ECDH-P256 / HKDF-SHA256</span></td>
+              <td class="label-cell">CIFRADO TEXTO:</td>
+              <td><span class="text-green">AES-GCM-256 + ECDH-P256 + HKDF &#10003;</span></td>
             </tr>
             <tr>
-              <td class="label-cell">FUENTE PeerJS:</td>
+              <td class="label-cell">CIFRADO MEDIA:</td>
+              <td><span class="text-green">DTLS 1.3 + SRTP (WebRTC nativo) &#10003;</span></td>
+            </tr>
+            <tr>
+              <td class="label-cell">PeerJS:</td>
               <td><span class="text-green">LOCAL (self-hosted) &#10003;</span></td>
             </tr>
           </table>
 
-          <!-- Advertencia de privacidad de IP -->
           <div class="notice-box notice-warning">
-            <b>!! AVISO CRITICO DE PRIVACIDAD DE IP !!</b><br>
-            El servidor de señalizacion PeerJS <b>conoce su IP publica</b> al conectarse,
-            aunque NUNCA ve el contenido de sus mensajes.<br>
-            <b>Para maxima privacidad: use Tor Browser</b> (descargue en torproject.org).
-            Con Tor, su IP queda oculta incluso para el servidor PeerJS.
+            <b>!! IP PUBLICA:</b> El servidor PeerJS ve su IP al conectarse.
+            Para ocultarla use <b>Tor Browser</b> (nivel "Safer").
+            Los mensajes y llamadas NUNCA pasan por el servidor.
           </div>
-
           <div class="notice-box">
-            <b>IDENTIDAD EFIMERA:</b> Su ID muere si recarga, cierra la pestana o sale.
-            No se guarda nada. Ningun servidor almacena mensajes.
-            No se usan cookies ni localStorage.
+            <b>SESION EFIMERA:</b> ID, claves y mensajes mueren al cerrar/recargar.
+            Sin cookies, sin localStorage, sin historial en servidores.
           </div>
 
           <div class="separator"></div>
 
-          <p class="section-title">&gt; INICIAR CONEXION CON UN CONTACTO:</p>
-          <p class="hint-text">
-            Comparta su ID por voz, SMS u otro medio externo.<br>
-            El contacto ingresa su ID abajo para conectarse a usted.
-          </p>
-
+          <p class="section-title">&gt; CONECTAR CON UN CONTACTO:</p>
           <div class="field-group">
             <label class="field-label" for="input-remote-id">ID DEL CONTACTO (8 caracteres):</label>
             <div class="field-row">
               <input type="text" id="input-remote-id"
                      placeholder="Ej: AB3K7PQR"
                      maxlength="8"
-                     autocomplete="off"
-                     spellcheck="false">
+                     autocomplete="off" spellcheck="false">
               <button id="btn-connect">[ CONECTAR ]</button>
             </div>
           </div>
@@ -147,11 +119,10 @@
           <div id="status-msg" class="status-bar-bottom"></div>
         </div>
       </div>
-
       <div class="footer-note">
-        SecureChat v2.0 &nbsp;|&nbsp; P2P WebRTC &nbsp;|&nbsp;
-        HKDF+AES-GCM-256+ECDH-P256 &nbsp;|&nbsp;
-        Sin servidores centrales &nbsp;|&nbsp; Sin cuentas &nbsp;|&nbsp; Sin logs
+        SecureChat v3.0 &nbsp;|&nbsp; Chat P2P + Voz + Video &nbsp;|&nbsp;
+        AES-GCM-256 | DTLS-SRTP | ECDH | HKDF &nbsp;|&nbsp;
+        Sin cuentas. Sin servidores. Sin logs.
       </div>
     </div>
   </div>
@@ -164,33 +135,18 @@
       <div class="window" style="max-width:500px;">
         <div class="title-bar">
           <span class="title-icon">&#9632;</span>
-          <span class="title-bar-text">SecureChat v2.0 -- Esperando Aceptacion</span>
+          <span class="title-bar-text">SecureChat v3.0 -- Esperando Aceptacion</span>
           <div class="title-bar-buttons">
-            <button class="tb-btn">_</button>
-            <button class="tb-btn">&#9633;</button>
-            <button class="tb-btn">X</button>
+            <button class="tb-btn">_</button><button class="tb-btn">&#9633;</button><button class="tb-btn">X</button>
           </div>
         </div>
-        <div class="window-body" style="padding: 20px 16px; text-align: center;">
+        <div class="window-body" style="padding:20px 16px; text-align:center;">
           <div class="wait-animation">&gt;&gt;&gt; AGUARDANDO ACEPTACION &lt;&lt;&lt;</div>
-
-          <p class="hint-text" style="margin: 14px 0;">
-            Solicitud enviada. El contacto debe ACEPTAR en su pantalla.
-          </p>
-
-          <table class="info-table" style="margin: 0 auto; width: auto;">
-            <tr>
-              <td class="label-cell">CONTACTO (ID):</td>
-              <td><span id="waiting-remote-id" class="id-display" style="font-size:14px;"></span></td>
-            </tr>
-            <tr>
-              <td class="label-cell">ECDH:</td>
-              <td><span class="text-green">PAR DE CLAVES INTERCAMBIADO &#10003;</span></td>
-            </tr>
-            <tr>
-              <td class="label-cell">HKDF:</td>
-              <td><span class="text-green">CLAVES SEND/RECV DERIVADAS &#10003;</span></td>
-            </tr>
+          <p class="hint-text" style="margin:14px 0;">Solicitud enviada. El contacto debe ACEPTAR en su pantalla.</p>
+          <table class="info-table" style="margin:0 auto; width:auto;">
+            <tr><td class="label-cell">CONTACTO:</td><td><span id="waiting-remote-id" class="id-display" style="font-size:14px;"></span></td></tr>
+            <tr><td class="label-cell">ECDH:</td><td><span class="text-green">CLAVES INTERCAMBIADAS &#10003;</span></td></tr>
+            <tr><td class="label-cell">HKDF:</td><td><span class="text-green">SEND/RECV KEYS LISTAS &#10003;</span></td></tr>
           </table>
           <br>
           <button id="btn-cancel-wait">[ CANCELAR ]</button>
@@ -200,14 +156,15 @@
   </div>
 
   <!-- ============================================================
-       VISTA 3: CHAT ACTIVO
+       VISTA 3: CHAT ACTIVO (con panel de llamada)
        ============================================================ -->
   <div id="view-chat" class="view">
     <div class="chat-outer">
+
       <!-- Barra de titulo -->
       <div class="chat-titlebar">
         <span class="title-icon">&#9632;</span>
-        <span id="chat-title-text">SecureChat v2.0 -- Sesion Activa</span>
+        <span id="chat-title-text">SecureChat v3.0 -- Sesion Activa</span>
         <div class="title-bar-buttons">
           <button class="tb-btn">_</button>
           <button class="tb-btn">&#9633;</button>
@@ -218,7 +175,6 @@
       <!-- Cabecera del chat -->
       <div class="chat-header">
         <div class="contact-row">
-          <!-- Avatar SVG generico sin rostro (sin imagenes externas) -->
           <div class="avatar-container">
             <svg class="avatar-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
               <rect width="40" height="40" fill="#808080"/>
@@ -232,55 +188,86 @@
               <span class="dot-green">&#9679;</span>
               <span id="contact-id-display" class="contact-id-meta"></span>
             </div>
-            <div class="encryption-badge">&#128274; AES-GCM-256 | HKDF | ECDH-P256 | E2EE ACTIVO</div>
+            <div class="encryption-badge">&#128274; AES-GCM-256 + DTLS-SRTP | E2EE ACTIVO</div>
           </div>
         </div>
-
         <div class="chat-actions">
+          <button id="btn-call-audio" title="Llamada de voz cifrada">&#128222; VOZ</button>
+          <button id="btn-call-video" title="Videollamada cifrada">&#127909; VIDEO</button>
           <button id="btn-rename">[ APODO ]</button>
           <button id="btn-show-fingerprint">[ VERIFICAR ]</button>
           <button id="btn-clear-chat">[ LIMPIAR ]</button>
         </div>
       </div>
 
-      <!-- Panel de verificacion (fingerprint ECDH) -->
-      <!--
-        IMPORTANTE: Este codigo de verificacion es el SHA-256 del secreto
-        compartido ECDH. Ambos usuarios deben compararlo POR VOZ o por un
-        canal separado. Si coincide: conexion autentica, CERO MitM.
-        Si NO coincide: hay un atacante en el medio. Desconecte YA.
-      -->
+      <!-- Panel de verificacion (fingerprint anti-MitM) -->
       <div id="fingerprint-panel" class="fingerprint-panel hidden">
-        <div class="fp-title">!! CODIGO DE VERIFICACION ANTI-MitM !!</div>
-        <div class="fp-subtitle">
-          Compare este codigo con su contacto POR VOZ o canal externo.<br>
-          Debe ser IDENTICO en ambas pantallas. Si difiere: HAY UN ATACANTE EN MEDIO.
-        </div>
+        <div class="fp-title">!! CODIGO DE VERIFICACION ANTI-MitM (TEXTO) !!</div>
+        <div class="fp-subtitle">Compare por VOZ con su contacto. IDENTICO = sin ataques. DIFERENTE = desconecte.</div>
         <div id="fingerprint-display" class="fingerprint-code"></div>
         <div class="fp-buttons">
-          <button id="btn-verified-ok" class="btn-fp-ok">[ &#10003; CODIGOS COINCIDEN -- SEGURO ]</button>
+          <button id="btn-verified-ok" class="btn-fp-ok">[ &#10003; COINCIDEN -- SEGURO ]</button>
           <button id="btn-verified-fail" class="btn-fp-fail">[ &#10007; NO COINCIDEN -- DESCONECTAR ]</button>
         </div>
       </div>
 
-      <!-- Contenedor de mensajes -->
+      <!-- ======================================================
+           PANEL DE VIDEOLLAMADA ACTIVA
+           ====================================================== -->
+      <div id="call-panel" class="call-panel hidden">
+        <div class="call-panel-header">
+          <span id="call-status-text">&#9679; LLAMADA ACTIVA</span>
+          <span id="call-timer" class="call-timer">00:00</span>
+          <span class="call-crypto-badge">&#128274; DTLS 1.3 + SRTP</span>
+        </div>
+
+        <!-- Videos -->
+        <div id="video-area" class="video-area hidden">
+          <!-- Video remoto (grande) -->
+          <video id="video-remote"
+                 class="video-remote"
+                 autoplay playsinline
+                 poster=""
+                 title="Video del contacto"></video>
+          <!-- Video local (pequeño, esquina) -->
+          <video id="video-local"
+                 class="video-local"
+                 autoplay playsinline muted
+                 title="Su camara (solo usted la ve)"></video>
+        </div>
+
+        <!-- Indicador de llamada de solo audio -->
+        <div id="audio-indicator" class="audio-indicator hidden">
+          <div class="audio-wave">
+            <span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span>
+          </div>
+          <div class="audio-label">LLAMADA DE VOZ ACTIVA -- DTLS-SRTP</div>
+        </div>
+
+        <!-- Controles de llamada -->
+        <div class="call-controls">
+          <button id="btn-toggle-mute"   class="call-btn"  title="Silenciar microfono">&#128263; MUTE</button>
+          <button id="btn-toggle-camera" class="call-btn call-btn-cam hidden" title="Apagar camara">&#128247; CAM</button>
+          <button id="btn-end-call"      class="call-btn call-btn-end" title="Colgar">&#128222; COLGAR</button>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
       <div id="messages-container"></div>
 
-      <!-- Area de entrada -->
+      <!-- Input de texto -->
       <div class="chat-input-area">
         <div class="input-hint">
           Enter = Enviar &nbsp;|&nbsp; Shift+Enter = Nueva linea &nbsp;|&nbsp;
-          <span id="rate-limit-warn" class="rate-warn hidden">!! LIMITE DE VELOCIDAD !!</span>
+          <span id="rate-limit-warn" class="rate-warn hidden">!! LIMITE VELOCIDAD !!</span>
         </div>
         <div class="input-row">
-          <textarea
-            id="message-input"
-            placeholder="Escriba su mensaje aqui..."
-            rows="3"
-            maxlength="4000"
-            autocomplete="off"
-            spellcheck="false"
-          ></textarea>
+          <textarea id="message-input"
+                    placeholder="Escriba su mensaje..."
+                    rows="3" maxlength="4000"
+                    autocomplete="off" spellcheck="false"></textarea>
           <button id="btn-send">ENVIAR<br>&gt;&gt;</button>
         </div>
         <div class="char-count"><span id="char-count">0</span> / 4000</div>
@@ -289,45 +276,60 @@
   </div>
 
   <!-- ============================================================
-       MODAL: SOLICITUD ENTRANTE (Usuario A)
+       MODAL: SOLICITUD DE CHAT ENTRANTE
        ============================================================ -->
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="window modal-window">
       <div class="title-bar title-bar-alert">
         <span class="title-icon">&#9888;</span>
         <span class="title-bar-text">&nbsp;!! SOLICITUD DE CHAT ENTRANTE !!</span>
-        <div class="title-bar-buttons">
-          <button class="tb-btn" id="btn-reject-x">X</button>
-        </div>
+        <div class="title-bar-buttons"><button class="tb-btn" id="btn-reject-x">X</button></div>
       </div>
-      <div class="window-body" style="padding: 16px;">
+      <div class="window-body" style="padding:16px;">
         <div class="alert-icon-row">&#9888; &#9888; &#9888;</div>
-        <p class="retro-p">Un usuario solicita un chat cifrado E2EE con usted.</p>
+        <p class="retro-p">Un usuario solicita chat cifrado E2EE.</p>
         <table class="info-table" width="100%">
-          <tr>
-            <td class="label-cell">ID SOLICITANTE:</td>
-            <td><span id="requester-id" class="id-display" style="font-size:14px;"></span></td>
-          </tr>
-          <tr>
-            <td class="label-cell">ECDH:</td>
-            <td><span class="text-green">PAR DE CLAVES VERIFICADO &#10003;</span></td>
-          </tr>
-          <tr>
-            <td class="label-cell">HKDF:</td>
-            <td><span class="text-green">SEND/RECV KEYS DERIVADAS &#10003;</span></td>
-          </tr>
-          <tr>
-            <td class="label-cell">CANAL:</td>
-            <td>P2P Directo sin servidores intermedios</td>
-          </tr>
+          <tr><td class="label-cell">ID SOLICITANTE:</td><td><span id="requester-id" class="id-display" style="font-size:14px;"></span></td></tr>
+          <tr><td class="label-cell">TEXTO:</td><td><span class="text-green">AES-GCM-256 + HKDF &#10003;</span></td></tr>
+          <tr><td class="label-cell">MEDIA:</td><td><span class="text-green">DTLS 1.3 + SRTP &#10003;</span></td></tr>
         </table>
-        <div class="notice-box" style="margin-top: 10px; font-size: 10px;">
-          Tras conectar, use [ VERIFICAR ] para comparar el Codigo de Verificacion
-          con su contacto por voz. Esto garantiza que no hay nadie en el medio.
+        <div class="notice-box" style="margin-top:10px; font-size:10px;">
+          Tras conectar, use [ VERIFICAR ] para comparar el Codigo de Verificacion por voz.
         </div>
-        <div class="button-row-centered" style="margin-top: 10px;">
+        <div class="button-row-centered" style="margin-top:10px;">
           <button id="btn-accept" class="btn-accept">[ SI -- ACEPTAR ]</button>
           <button id="btn-reject" class="btn-reject">[ NO -- RECHAZAR ]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: LLAMADA ENTRANTE
+       ============================================================ -->
+  <div id="modal-incoming-call" class="modal-overlay hidden">
+    <div class="window modal-window" style="max-width:420px;">
+      <div class="title-bar title-bar-call">
+        <span class="title-icon">&#9632;</span>
+        <span class="title-bar-text" id="incoming-call-title">&nbsp;&#128222; LLAMADA ENTRANTE</span>
+        <div class="title-bar-buttons"><button class="tb-btn" id="btn-reject-call-x">X</button></div>
+      </div>
+      <div class="window-body" style="padding:16px; text-align:center;">
+        <div class="call-ringing">&#128222;&#128222;&#128222;</div>
+        <p class="retro-p" style="margin:10px 0;" id="incoming-call-desc">
+          Su contacto le llama.
+        </p>
+        <table class="info-table" style="margin:0 auto; width:auto;">
+          <tr><td class="label-cell">CIFRADO:</td><td><span class="text-green">DTLS 1.3 + SRTP &#10003;</span></td></tr>
+          <tr><td class="label-cell">TIPO:</td><td><span id="incoming-call-type">VOZ</span></td></tr>
+        </table>
+        <div class="button-row-centered" style="margin-top:14px;">
+          <button id="btn-answer-call" class="btn-accept" style="font-size:13px; padding:6px 16px;">
+            &#128222; CONTESTAR
+          </button>
+          <button id="btn-reject-call" class="btn-reject" style="font-size:13px; padding:6px 16px;">
+            &#128528; RECHAZAR
+          </button>
         </div>
       </div>
     </div>
@@ -338,15 +340,11 @@
     <div class="window modal-window" style="max-width:380px;">
       <div class="title-bar">
         <span class="title-icon">&#9632;</span>
-        <span class="title-bar-text">Asignar Apodo Local (solo visible para usted)</span>
-        <div class="title-bar-buttons">
-          <button class="tb-btn" id="btn-close-nickname">X</button>
-        </div>
+        <span class="title-bar-text">Asignar Apodo Local</span>
+        <div class="title-bar-buttons"><button class="tb-btn" id="btn-close-nickname">X</button></div>
       </div>
-      <div class="window-body" style="padding: 14px;">
-        <p class="retro-p">
-          Este apodo es <b>solo en su pantalla</b>. El contacto NO lo ve.
-        </p>
+      <div class="window-body" style="padding:14px;">
+        <p class="retro-p">Apodo <b>solo visible para usted</b>. El contacto NO lo ve.</p>
         <div class="field-group" style="margin-top:10px;">
           <label class="field-label" for="nickname-input">APODO LOCAL:</label>
           <input type="text" id="nickname-input" maxlength="20"
@@ -361,12 +359,11 @@
     </div>
   </div>
 
-  <!--
-    IMPORTANTE: peerjs.min.js DEBE estar en la misma carpeta.
-    Descargue desde: https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js
-    y guárdelo como peerjs.min.js en su repositorio.
-    Esto elimina la dependencia del CDN de unpkg (vector de ataque).
-  -->
+  <!-- Audio oculto para reproducir tono de llamada -->
+  <audio id="ringtone" loop>
+    <!-- Sin src: el tono se genera con Web Audio API en app.js -->
+  </audio>
+
   <script src="peerjs.min.js"></script>
   <script src="app.js"></script>
 </body>
